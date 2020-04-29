@@ -5,20 +5,20 @@ import scala.io.StdIn
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
-import caliban.ExampleData.sampleCharacters
+import caliban.StackData.{sampleNumbers}
 import caliban.interop.play.AkkaHttpPlayJsonAdapter
 import zio.{Runtime, ZEnv}
 
-object ExampleApp extends App with AkkaHttpPlayJsonAdapter {
+object StackApp extends App with AkkaHttpPlayJsonAdapter {
   implicit val system: ActorSystem = ActorSystem()
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
   implicit val runtime: Runtime[ZEnv] = Runtime.default
 
   val interpreter = runtime.unsafeRun(
-    ExampleService
-      .make(sampleCharacters)
+    StackService
+      .make(sampleNumbers)
       .memoize
-      .use(layer => ExampleApi.api.interpreter.map(_.provideCustomLayer(layer)))
+      .use(layer => StackApi.api.interpreter.map(_.provideCustomLayer(layer)))
   )
 
   /**

@@ -1,9 +1,9 @@
 package caliban
 
-
 import scala.language.postfixOps
 import caliban.StackService.StackService
 import caliban.GraphQL.graphQL
+import caliban.StackData.NumberArg
 import caliban.schema.Annotations.{GQLDeprecated, GQLDescription}
 import caliban.schema.GenericSchema
 import caliban.wrappers.ApolloTracing.apolloTracing
@@ -22,11 +22,13 @@ object StackApi extends GenericSchema[StackService] {
                     )
 
   case class Mutations(
-                        push: Int => URIO[StackService, Unit],
+                        push: NumberArg => URIO[StackService, Unit],
                         pop: URIO[StackService, Option[Int]]
                       )
 
   case class Subscriptions(numbersDeleted: ZStream[StackService, Nothing, Int])
+
+  implicit val numberArgSchema  = gen[NumberArg]
 
   val api: GraphQL[Console with Clock with StackService] =
     graphQL(
@@ -35,7 +37,7 @@ object StackApi extends GenericSchema[StackService] {
           StackService.getStack,
           StackService.peak),
         Mutations(
-          args => StackService.push(args),
+          args => StackService.push(args.num),
           StackService.pop
         ),
         Subscriptions(StackService.deletedEvents)

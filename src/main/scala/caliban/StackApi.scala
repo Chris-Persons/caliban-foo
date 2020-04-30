@@ -37,7 +37,7 @@ object StackApi extends GenericSchema[StackService] {
           StackService.getStack,
           StackService.peak),
         Mutations(
-          args => StackService.push(args.num),
+          numberArg => StackService.push(numberArg.num),
           StackService.pop
         ),
         Subscriptions(StackService.deletedEvents)

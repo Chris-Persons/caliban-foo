@@ -38,8 +38,7 @@ object StackService {
 
       def getStack: UIO[List[Int]] = nums.get
 
-      def push(num: Int): UIO[Unit] = nums.modify(list => ((), num :: list)).tap(
-        _
+      def push(num: Int): UIO[Unit] = nums.modify(list => ((), num :: list)).tap( _
         => UIO.when(true)(
           subscribers.get.flatMap(
             UIO.foreach(_)(
@@ -47,19 +46,17 @@ object StackService {
                 queue.offer(num).onInterrupt(
                   subscribers.update(_.filterNot(_ == queue))
                 ))
-
           ))
       )
-
-      def pop: UIO[Option[Int]] = nums.modify(list => if (list.isEmpty) (None, list) else (Some(list.head), list)).tap(
+      def pop: UIO[Option[Int]] = nums.modify(list =>
+        if (list.isEmpty) (None, list) else (Some(list.head), list.tail)).tap(
         deleted => UIO.when(deleted.nonEmpty)(
           subscribers.get.flatMap(
             // add item to all subscribers
             UIO.foreach(_)(
               queue =>
                 queue
-                  .offer(deleted.get)
-                  .onInterrupt(
+                  .offer(deleted.get).onInterrupt(
                     subscribers.update(_.filterNot(_ == queue))
                   ) // if queue was shutdown, remove from subscribers
             )
